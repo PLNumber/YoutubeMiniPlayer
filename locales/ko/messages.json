@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "유튜브 미니 플레이어"
+  },
+  "extensionDescription": {
+    "message": "API 없이 YouTube 검색 결과 또는 홈페이지를 작은 창으로 여는 확장 프로그램입니다."
+  },
+  "commandOpenPopup": {
+    "message": "유튜브 미니 플레이어 열기"
+  }
+}
