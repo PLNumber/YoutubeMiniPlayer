@@ -23,7 +23,7 @@
   },
   "manifest": {
     "default_locale": "en",
-    "permissions": ["windows", "storage"],
+    "permissions": ["windows", "storage", "tabs"],
     "commands": {
       "open-youtube-mini-player": {
         "suggested_key": {

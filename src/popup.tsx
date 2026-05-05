@@ -4,265 +4,253 @@ function Popup() {
   const vm = usePopupViewModel()
 
   return (
-    <main className="app">
+    <main className="popup-root">
       <section className="header">
-        <h1>{vm.text.appName}</h1>
-        <p>{vm.text.subtitle}</p>
+        <div>
+          <h1>{vm.text.appName}</h1>
+          <p>{vm.text.subtitle}</p>
+        </div>
       </section>
 
-      <section className="searchSection">
+      <section className="search-section">
         <input
+          className="search-input"
+          type="text"
           value={vm.inputValue}
           onChange={vm.handleInputChange}
           onKeyDown={vm.handleKeyDown}
           placeholder={vm.text.placeholder}
-          spellCheck={false}
+          autoFocus
         />
 
-        <div className="buttonColumn">
-          <button type="button" className="primaryButton" onClick={vm.handleSearch}>
+        <div className="button-row">
+          <button className="primary-button" type="button" onClick={vm.handleSearch}>
             {vm.text.searchButton}
           </button>
 
-          <button type="button" className="youtubeLinkButton" onClick={vm.handleOpenYouTube}>
+          <button
+            className="secondary-button"
+            type="button"
+            onClick={vm.handleOpenYouTube}
+          >
             {vm.text.openYouTubeButton}
           </button>
         </div>
       </section>
 
-      <section className="infoCard">
-        <p className={vm.isError ? "message error" : "message"}>{vm.message}</p>
-      </section>
+      <p className={vm.isError ? "message error" : "message"}>{vm.message}</p>
 
-      <section className="footerRow">
-        <div className="shortcutInfo">
-          <span className="shortcutLabel">{vm.text.shortcutLabel}</span>
-          <span className="shortcutText">{vm.text.shortcutKey}</span>
+      <section className="shortcut-row">
+        <div className="shortcut-text">
+          <span>{vm.text.shortcutLabel}</span>
+          <strong>{vm.text.shortcutKey}</strong>
         </div>
 
         <button
+          className={vm.isShortcutEnabled ? "toggle active" : "toggle"}
           type="button"
-          className={vm.isShortcutEnabled ? "toggleButton on" : "toggleButton off"}
-          onClick={vm.handleToggleShortcut}
+          role="switch"
+          aria-checked={vm.isShortcutEnabled}
           aria-label={vm.text.shortcutToggleLabel}
+          onClick={vm.handleToggleShortcut}
         >
-          <span className="toggleThumb" />
+          <span />
         </button>
       </section>
 
-      <style>
-        {`
-          * {
-            box-sizing: border-box;
-          }
+      <style>{`
+        * {
+          box-sizing: border-box;
+        }
 
-          body {
-            margin: 0;
-            background: #0b1020;
-            color: #f8fafc;
-            font-family:
-              Inter,
-              system-ui,
-              -apple-system,
-              BlinkMacSystemFont,
-              "Segoe UI",
-              sans-serif;
-          }
+        html,
+        body {
+          margin: 0;
+          padding: 0;
+          width: 320px;
+          min-height: 0;
+          background: #111827;
+          color: #e5e7eb;
+          font-family:
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            sans-serif;
+        }
 
-          .app {
-            width: 400px;
-            min-height: 285px;
-            padding: 18px 16px 16px;
-            background:
-              radial-gradient(circle at top left, rgba(255, 0, 80, 0.16), transparent 30%),
-              linear-gradient(180deg, #141a2b 0%, #0a1020 100%);
-          }
+        button,
+        input {
+          font: inherit;
+        }
 
-          .header {
-            margin-bottom: 14px;
-          }
+        .popup-root {
+          width: 320px;
+          padding: 14px;
+          background: #111827;
+        }
 
-          .header h1 {
-            margin: 0;
-            font-size: 21px;
-            font-weight: 800;
-            letter-spacing: -0.4px;
-          }
+        .header {
+          margin-bottom: 12px;
+        }
 
-          .header p {
-            margin: 5px 0 0;
-            color: #9ca3af;
-            font-size: 12px;
-            line-height: 1.4;
-          }
+        .header h1 {
+          margin: 0;
+          font-size: 18px;
+          line-height: 1.3;
+          font-weight: 700;
+          letter-spacing: -0.02em;
+          color: #f9fafb;
+        }
 
-          .searchSection {
-            padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 18px;
-            background: rgba(255, 255, 255, 0.05);
-            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
-          }
+        .header p {
+          margin: 4px 0 0;
+          font-size: 12px;
+          line-height: 1.45;
+          color: #9ca3af;
+        }
 
-          .searchSection input {
-            width: 100%;
-            height: 42px;
-            padding: 0 14px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 13px;
-            outline: none;
-            background: rgba(0, 0, 0, 0.25);
-            color: #ffffff;
-            font-size: 14px;
-          }
+        .search-section {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          padding: 10px;
+          border: 1px solid #283244;
+          border-radius: 14px;
+          background: #172033;
+        }
 
-          .searchSection input::placeholder {
-            color: #6b7280;
-          }
+        .search-input {
+          width: 100%;
+          height: 38px;
+          padding: 0 12px;
+          border: 1px solid #283244;
+          border-radius: 10px;
+          outline: none;
+          background: #0f172a;
+          color: #f9fafb;
+          font-size: 13px;
+        }
 
-          .searchSection input:focus {
-            border-color: rgba(239, 68, 68, 0.75);
-            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.14);
-          }
+        .search-input::placeholder {
+          color: #6b7280;
+        }
 
-          .buttonColumn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            margin-top: 12px;
-          }
+        .search-input:focus {
+          border-color: #60a5fa;
+          box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.18);
+        }
 
-          .primaryButton {
-            width: 180px;
-            height: 38px;
-            padding: 0 18px;
-            border: none;
-            border-radius: 12px;
-            background: #ef4444;
-            color: #ffffff;
-            font-size: 14px;
-            font-weight: 800;
-            cursor: pointer;
-            transition:
-              transform 0.15s ease,
-              opacity 0.15s ease,
-              background 0.15s ease;
-          }
+        .button-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+        }
 
-          .primaryButton:hover {
-            background: #dc2626;
-            transform: translateY(-1px);
-          }
+        .primary-button,
+        .secondary-button {
+          height: 36px;
+          border: 0;
+          border-radius: 10px;
+          cursor: pointer;
+          font-size: 13px;
+          font-weight: 700;
+          transition:
+            background 120ms ease,
+            transform 120ms ease,
+            border-color 120ms ease;
+        }
 
-          .primaryButton:active {
-            transform: translateY(0);
-            opacity: 0.9;
-          }
+        .primary-button {
+          background: #ef4444;
+          color: #ffffff;
+        }
 
-          .youtubeLinkButton {
-            height: 22px;
-            padding: 0 4px;
-            border: none;
-            background: transparent;
-            color: #9ca3af;
-            font-size: 12px;
-            font-weight: 600;
-            text-decoration: underline;
-            text-underline-offset: 3px;
-            cursor: pointer;
-            transition:
-              color 0.15s ease,
-              opacity 0.15s ease;
-          }
+        .primary-button:hover {
+          background: #f05252;
+        }
 
-          .youtubeLinkButton:hover {
-            color: #d1d5db;
-          }
+        .secondary-button {
+          border: 1px solid #374151;
+          background: #1f2937;
+          color: #d1d5db;
+        }
 
-          .youtubeLinkButton:active {
-            opacity: 0.75;
-          }
+        .secondary-button:hover {
+          background: #273449;
+          border-color: #4b5563;
+        }
 
-          .infoCard {
-            margin-top: 12px;
-            padding: 10px 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 14px;
-            background: rgba(7, 10, 20, 0.45);
-          }
+        .primary-button:active,
+        .secondary-button:active {
+          transform: translateY(1px);
+        }
 
-          .message {
-            margin: 0;
-            color: #cbd5e1;
-            font-size: 12px;
-            line-height: 1.5;
-          }
+        .message {
+          min-height: 18px;
+          margin: 10px 2px 8px;
+          font-size: 12px;
+          line-height: 1.45;
+          color: #9ca3af;
+        }
 
-          .message.error {
-            color: #fca5a5;
-          }
+        .message.error {
+          color: #fca5a5;
+        }
 
-          .footerRow {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 12px;
-            padding: 0 2px;
-          }
+        .shortcut-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding-top: 8px;
+          border-top: 1px solid #1f2937;
+        }
 
-          .shortcutInfo {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-          }
+        .shortcut-text {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          color: #9ca3af;
+          font-size: 12px;
+        }
 
-          .shortcutLabel {
-            color: #94a3b8;
-            font-size: 12px;
-          }
+        .shortcut-text strong {
+          color: #f9fafb;
+          font-size: 12px;
+          font-weight: 700;
+        }
 
-          .shortcutText {
-            color: #ffffff;
-            font-size: 12px;
-            font-weight: 700;
-          }
+        .toggle {
+          position: relative;
+          width: 38px;
+          height: 22px;
+          border: 0;
+          border-radius: 999px;
+          background: #4b5563;
+          cursor: pointer;
+          padding: 0;
+          transition: background 120ms ease;
+        }
 
-          .toggleButton {
-            position: relative;
-            width: 44px;
-            height: 24px;
-            border: none;
-            border-radius: 999px;
-            cursor: pointer;
-            transition: background 0.15s ease;
-            padding: 0;
-          }
+        .toggle span {
+          position: absolute;
+          top: 3px;
+          left: 3px;
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: #ffffff;
+          transition: transform 120ms ease;
+        }
 
-          .toggleButton.on {
-            background: #22c55e;
-          }
+        .toggle.active {
+          background: #22c55e;
+        }
 
-          .toggleButton.off {
-            background: #475569;
-          }
-
-          .toggleThumb {
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 18px;
-            height: 18px;
-            border-radius: 999px;
-            background: #ffffff;
-            transition: transform 0.15s ease;
-          }
-
-          .toggleButton.on .toggleThumb {
-            transform: translateX(20px);
-          }
-        `}
-      </style>
+        .toggle.active span {
+          transform: translateX(16px);
+        }
+      `}</style>
     </main>
   )
 }

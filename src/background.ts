@@ -1,5 +1,7 @@
 import { SHORTCUT_ENABLED_KEY } from "./constants/storageKeys"
 
+const MINI_PLAYER_COMMAND = "open-youtube-mini-player"
+
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.get([SHORTCUT_ENABLED_KEY], (result) => {
     if (typeof result[SHORTCUT_ENABLED_KEY] !== "boolean") {
@@ -11,7 +13,7 @@ chrome.runtime.onInstalled.addListener(() => {
 })
 
 chrome.commands.onCommand.addListener((command) => {
-  if (command !== "open-youtube-mini-player") {
+  if (command !== MINI_PLAYER_COMMAND) {
     return
   }
 
@@ -24,14 +26,8 @@ chrome.commands.onCommand.addListener((command) => {
 
     try {
       await chrome.action.openPopup()
-    } catch {
-      chrome.windows.create({
-        url: chrome.runtime.getURL("popup.html"),
-        type: "popup",
-        width: 420,
-        height: 560,
-        focused: true
-      })
+    } catch (error) {
+      console.warn("팝업을 열 수 없습니다.", error)
     }
   })
 })

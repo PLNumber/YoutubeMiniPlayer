@@ -3,7 +3,7 @@
     "message": "YouTube Mini Player"
   },
   "extensionDescription": {
-    "message": "Open YouTube search results or the YouTube homepage in a small popup window without API keys."
+    "message": "Opens YouTube search results or the YouTube homepage in a small popup window."
   },
   "commandOpenPopup": {
     "message": "Open YouTube Mini Player"
