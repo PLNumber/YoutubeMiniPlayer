@@ -1,11 +1,11 @@
 {
   "extensionName": {
-    "message": "YouTube Mini Player"
+    "message": "YouTube Quick Search"
   },
   "extensionDescription": {
     "message": "Opens YouTube search results or the YouTube homepage in a small popup window. The shortcut key is 'Alt + Y'."
   },
   "commandOpenPopup": {
-    "message": "Open YouTube Mini Player"
+    "message": "Open YouTube Quick Search"
   }
 }
