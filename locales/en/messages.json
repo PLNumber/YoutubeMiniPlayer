@@ -3,7 +3,7 @@
     "message": "YouTube Mini Player"
   },
   "extensionDescription": {
-    "message": "Opens YouTube search results or the YouTube homepage in a small popup window."
+    "message": "Opens YouTube search results or the YouTube homepage in a small popup window. The shortcut key is 'Alt + Y'."
   },
   "commandOpenPopup": {
     "message": "Open YouTube Mini Player"

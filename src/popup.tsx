@@ -59,6 +59,80 @@ function Popup() {
       </section>
 
       <style>{`
+        :root {
+          color-scheme: dark;
+
+          --bg: #111827;
+          --text-main: #f9fafb;
+          --text-sub: #9ca3af;
+
+          --card-bg: #172033;
+          --card-border: #283244;
+
+          --input-bg: #0f172a;
+          --input-border: #283244;
+          --input-text: #f9fafb;
+          --input-placeholder: #6b7280;
+
+          --focus-border: #60a5fa;
+          --focus-shadow: rgba(96, 165, 250, 0.18);
+
+          --primary-bg: #ef4444;
+          --primary-bg-hover: #f05252;
+          --primary-text: #ffffff;
+
+          --secondary-bg: #1f2937;
+          --secondary-bg-hover: #273449;
+          --secondary-border: #374151;
+          --secondary-border-hover: #4b5563;
+          --secondary-text: #d1d5db;
+
+          --error-text: #fca5a5;
+
+          --divider: #1f2937;
+          --toggle-bg: #4b5563;
+          --toggle-active-bg: #22c55e;
+          --toggle-knob: #ffffff;
+        }
+
+        @media (prefers-color-scheme: light) {
+          :root {
+            color-scheme: light;
+
+            --bg: #f8fafc;
+            --text-main: #111827;
+            --text-sub: #6b7280;
+
+            --card-bg: #ffffff;
+            --card-border: #e5e7eb;
+
+            --input-bg: #f9fafb;
+            --input-border: #d1d5db;
+            --input-text: #111827;
+            --input-placeholder: #9ca3af;
+
+            --focus-border: #2563eb;
+            --focus-shadow: rgba(37, 99, 235, 0.16);
+
+            --primary-bg: #dc2626;
+            --primary-bg-hover: #b91c1c;
+            --primary-text: #ffffff;
+
+            --secondary-bg: #f3f4f6;
+            --secondary-bg-hover: #e5e7eb;
+            --secondary-border: #d1d5db;
+            --secondary-border-hover: #9ca3af;
+            --secondary-text: #374151;
+
+            --error-text: #dc2626;
+
+            --divider: #e5e7eb;
+            --toggle-bg: #d1d5db;
+            --toggle-active-bg: #16a34a;
+            --toggle-knob: #ffffff;
+          }
+        }
+
         * {
           box-sizing: border-box;
         }
@@ -69,8 +143,8 @@ function Popup() {
           padding: 0;
           width: 320px;
           min-height: 0;
-          background: #111827;
-          color: #e5e7eb;
+          background: var(--bg);
+          color: var(--text-main);
           font-family:
             system-ui,
             -apple-system,
@@ -87,7 +161,10 @@ function Popup() {
         .popup-root {
           width: 320px;
           padding: 14px;
-          background: #111827;
+          background: var(--bg);
+          transition:
+            background 140ms ease,
+            color 140ms ease;
         }
 
         .header {
@@ -100,14 +177,14 @@ function Popup() {
           line-height: 1.3;
           font-weight: 700;
           letter-spacing: -0.02em;
-          color: #f9fafb;
+          color: var(--text-main);
         }
 
         .header p {
           margin: 4px 0 0;
           font-size: 12px;
           line-height: 1.45;
-          color: #9ca3af;
+          color: var(--text-sub);
         }
 
         .search-section {
@@ -115,30 +192,38 @@ function Popup() {
           flex-direction: column;
           gap: 8px;
           padding: 10px;
-          border: 1px solid #283244;
+          border: 1px solid var(--card-border);
           border-radius: 14px;
-          background: #172033;
+          background: var(--card-bg);
+          transition:
+            background 140ms ease,
+            border-color 140ms ease;
         }
 
         .search-input {
           width: 100%;
           height: 38px;
           padding: 0 12px;
-          border: 1px solid #283244;
+          border: 1px solid var(--input-border);
           border-radius: 10px;
           outline: none;
-          background: #0f172a;
-          color: #f9fafb;
+          background: var(--input-bg);
+          color: var(--input-text);
           font-size: 13px;
+          transition:
+            background 140ms ease,
+            color 140ms ease,
+            border-color 140ms ease,
+            box-shadow 140ms ease;
         }
 
         .search-input::placeholder {
-          color: #6b7280;
+          color: var(--input-placeholder);
         }
 
         .search-input:focus {
-          border-color: #60a5fa;
-          box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.18);
+          border-color: var(--focus-border);
+          box-shadow: 0 0 0 2px var(--focus-shadow);
         }
 
         .button-row {
@@ -150,7 +235,6 @@ function Popup() {
         .primary-button,
         .secondary-button {
           height: 36px;
-          border: 0;
           border-radius: 10px;
           cursor: pointer;
           font-size: 13px;
@@ -158,27 +242,29 @@ function Popup() {
           transition:
             background 120ms ease,
             transform 120ms ease,
-            border-color 120ms ease;
+            border-color 120ms ease,
+            color 120ms ease;
         }
 
         .primary-button {
-          background: #ef4444;
-          color: #ffffff;
+          border: 0;
+          background: var(--primary-bg);
+          color: var(--primary-text);
         }
 
         .primary-button:hover {
-          background: #f05252;
+          background: var(--primary-bg-hover);
         }
 
         .secondary-button {
-          border: 1px solid #374151;
-          background: #1f2937;
-          color: #d1d5db;
+          border: 1px solid var(--secondary-border);
+          background: var(--secondary-bg);
+          color: var(--secondary-text);
         }
 
         .secondary-button:hover {
-          background: #273449;
-          border-color: #4b5563;
+          background: var(--secondary-bg-hover);
+          border-color: var(--secondary-border-hover);
         }
 
         .primary-button:active,
@@ -191,11 +277,11 @@ function Popup() {
           margin: 10px 2px 8px;
           font-size: 12px;
           line-height: 1.45;
-          color: #9ca3af;
+          color: var(--text-sub);
         }
 
         .message.error {
-          color: #fca5a5;
+          color: var(--error-text);
         }
 
         .shortcut-row {
@@ -203,19 +289,19 @@ function Popup() {
           align-items: center;
           justify-content: space-between;
           padding-top: 8px;
-          border-top: 1px solid #1f2937;
+          border-top: 1px solid var(--divider);
         }
 
         .shortcut-text {
           display: flex;
           align-items: center;
           gap: 7px;
-          color: #9ca3af;
+          color: var(--text-sub);
           font-size: 12px;
         }
 
         .shortcut-text strong {
-          color: #f9fafb;
+          color: var(--text-main);
           font-size: 12px;
           font-weight: 700;
         }
@@ -226,7 +312,7 @@ function Popup() {
           height: 22px;
           border: 0;
           border-radius: 999px;
-          background: #4b5563;
+          background: var(--toggle-bg);
           cursor: pointer;
           padding: 0;
           transition: background 120ms ease;
@@ -239,12 +325,12 @@ function Popup() {
           width: 16px;
           height: 16px;
           border-radius: 50%;
-          background: #ffffff;
+          background: var(--toggle-knob);
           transition: transform 120ms ease;
         }
 
         .toggle.active {
-          background: #22c55e;
+          background: var(--toggle-active-bg);
         }
 
         .toggle.active span {
