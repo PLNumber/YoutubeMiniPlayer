@@ -22,7 +22,7 @@ export function requestVideoDocumentPip(video: VideoResult): Promise<DocumentPip
   const api = (window as Window & { documentPictureInPicture?: DocumentPipApi }).documentPictureInPicture
   if (!api?.requestWindow) throw new Error("이 Chrome에서는 Document PiP를 지원하지 않아요.")
   // No await, fetch, chrome.storage calls before requestWindow: preserve user activation.
-  const promise = api.requestWindow({ width: 592, height: 406 })
+  const promise = api.requestWindow({ width: 500, height: 340 })
   return promise.then((pip) => {
     const doc = pip.document
     doc.title = `MiniView — ${video.title}`

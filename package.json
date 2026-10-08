@@ -1,7 +1,7 @@
 {
   "name": "miniview-youtube-pip",
   "displayName": "__MSG_extensionName__",
-  "version": "3.0.0",
+  "version": "3.2.0",
   "description": "__MSG_extensionDescription__",
   "author": "PL Number",
   "scripts": {
@@ -30,7 +30,7 @@
       "windows"
     ],
     "host_permissions": [
-      "https://www.googleapis.com/*"
+      "https://www.youtube.com/*"
     ],
     "action": {},
     "commands": {

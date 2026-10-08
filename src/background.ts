@@ -1,23 +1,76 @@
-const LAUNCHER_PATH = "tabs/miniview.html"
+/** MiniView window launcher: reuses its dedicated window even after YouTube navigation. */
+const MINI_VIEW_URL = chrome.runtime.getURL("tabs/miniview.html")
+const WINDOW_STORAGE_KEY = "miniview_window_id"
+const WIDTH = 420
+const HEIGHT = 620
 
-async function launchMiniView() {
-  const target = chrome.runtime.getURL(LAUNCHER_PATH)
-  const existing = await chrome.tabs.query({ url: `${chrome.runtime.getURL("tabs/")}*` })
-  const found = existing.find((tab) => tab.url?.split("?")[0] === target && typeof tab.id === "number")
-  if (found?.id !== undefined) {
-    await chrome.tabs.update(found.id, { active: true })
-    if (found.windowId !== undefined) await chrome.windows.update(found.windowId, { focused: true })
-  } else {
-    await chrome.tabs.create({ url: target })
+let opening: Promise<void> | null = null
+
+async function getMiniViewWindowId(): Promise<number | null> {
+  const stored = await chrome.storage.session.get(WINDOW_STORAGE_KEY)
+  const id = stored[WINDOW_STORAGE_KEY]
+  if (typeof id !== "number") return null
+  try {
+    const win = await chrome.windows.get(id)
+    return win.type === "popup" ? id : null
+  } catch {
+    await chrome.storage.session.remove(WINDOW_STORAGE_KEY)
+    return null
   }
 }
 
-// No default_popup: toolbar click launches a persistent extension tab.
-chrome.action.onClicked.addListener(() => {
-  void launchMiniView().catch((error) => console.error("MiniView 열기 실패:", error))
-})
-chrome.commands.onCommand.addListener((command) => {
-  if (command === "open-youtube-mini-player") {
-    void launchMiniView().catch((error) => console.error("MiniView 단축키 실행 실패:", error))
+async function openOrFocusMiniView(): Promise<void> {
+  let id = await getMiniViewWindowId()
+  if (id === null) {
+    // Recover if the extension was updated while a MiniView launcher was open.
+    const windows = await chrome.windows.getAll({ populate: true, windowTypes: ["popup"] })
+    id = windows.find((win) => win.tabs?.some((tab) => tab.url?.split(/[?#]/)[0] === MINI_VIEW_URL))?.id ?? null
   }
+  if (id !== null) {
+    await chrome.storage.session.set({ [WINDOW_STORAGE_KEY]: id })
+    await chrome.windows.update(id, { focused: true, state: "normal" })
+    return
+  }
+  const created = await chrome.windows.create({
+    url: MINI_VIEW_URL, type: "popup", width: WIDTH, height: HEIGHT, focused: true
+  })
+  if (typeof created.id === "number") {
+    await chrome.storage.session.set({ [WINDOW_STORAGE_KEY]: created.id })
+  }
+}
+
+function launchMiniView(): void {
+  if (opening) return
+  opening = openOrFocusMiniView()
+    .catch((error: unknown) => console.error("MiniView 창 실행 실패:", error))
+    .finally(() => { opening = null })
+}
+
+chrome.action.onClicked.addListener(launchMiniView)
+chrome.commands.onCommand.addListener((command) => {
+  if (command === "open-youtube-mini-player") launchMiniView()
+})
+chrome.windows.onRemoved.addListener((id) => {
+  void chrome.storage.session.get(WINDOW_STORAGE_KEY).then((value) => {
+    if (value[WINDOW_STORAGE_KEY] === id) return chrome.storage.session.remove(WINDOW_STORAGE_KEY)
+  })
+})
+
+// The content script only adds the "Back to MiniView" button to OUR dedicated popup.
+chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) => {
+  if (!message || typeof message !== "object" || !("type" in message)) return
+  const type = (message as { type: string }).type
+  if (type !== "MINIVIEW_CHECK_WINDOW" && type !== "MINIVIEW_RETURN") return
+  void (async () => {
+    const id = await getMiniViewWindowId()
+    const allowed = id !== null && sender.tab?.windowId === id
+    if (type === "MINIVIEW_RETURN" && allowed && sender.tab?.id !== undefined) {
+      await chrome.tabs.update(sender.tab.id, { url: MINI_VIEW_URL })
+    }
+    sendResponse({ ok: allowed })
+  })().catch((error: unknown) => {
+    console.error("MiniView 메세지 처리 실패:", error)
+    sendResponse({ ok: false })
+  })
+  return true
 })
