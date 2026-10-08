@@ -1,11 +1,11 @@
 {
   "extensionName": {
-    "message": "Quick Search for YouTube"
+    "message": "유튜브 미니 플레이어"
   },
   "extensionDescription": {
-    "message": "YouTube 검색 결과 또는 홈페이지를 작은 창으로 빠르게 여는 확장 프로그램입니다. 단축키는 'Alt + Y'입니다."
+    "message": "유튜브 영상을 PiP 또는 별도 작은 창으로 시청합니다. Alt+Y로 팝업을 엽니다."
   },
   "commandOpenPopup": {
-    "message": "Quick Search for YouTube 열기"
+    "message": "유튜브 미니 플레이어 팝업 열기"
   }
 }

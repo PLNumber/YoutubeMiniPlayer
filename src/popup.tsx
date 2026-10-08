@@ -1,344 +1,96 @@
 import { usePopupViewModel } from "./viewmodels/usePopupViewModel"
+import type { PlayerMode } from "./types/playerMode"
 
-function Popup() {
+export default function Popup() {
   const vm = usePopupViewModel()
+  const choices: { mode: PlayerMode; label: string }[] = [
+    { mode: "pip", label: vm.text.pipModeLabel },
+    { mode: "radio", label: vm.text.radioModeLabel },
+    { mode: "window", label: vm.text.windowModeLabel }
+  ]
+  const hint = vm.mode === "pip" ? vm.text.pipHint : vm.mode === "radio" ? vm.text.radioHint : vm.text.windowHint
 
   return (
     <main className="popup-root">
-      <section className="header">
-        <div>
-          <h1>{vm.text.appName}</h1>
-          <p>{vm.text.subtitle}</p>
+      <header>
+        <h1>{vm.text.appName}</h1>
+        <p>{vm.text.subtitle}</p>
+      </header>
+      <section className="panel">
+        <div className="label">{vm.text.modeLabel}</div>
+        <div className="modes">
+          {choices.map((choice) => (
+            <button
+              type="button"
+              key={choice.mode}
+              className={vm.mode === choice.mode ? "selected" : ""}
+              aria-pressed={vm.mode === choice.mode}
+              onClick={() => void vm.handleModeChange(choice.mode)}
+            >
+              {choice.label}
+            </button>
+          ))}
         </div>
+        <p className="hint">{hint}</p>
       </section>
-
-      <section className="search-section">
+      {vm.mode !== "window" && (
+        <button className="focus-button" onClick={vm.handleGoToVideo} disabled={vm.isBusy}>
+          {vm.text.focusButton}
+        </button>
+      )}
+      <section className="panel">
         <input
-          className="search-input"
-          type="text"
+          aria-label={vm.text.placeholder}
+          placeholder={vm.text.placeholder}
           value={vm.inputValue}
           onChange={vm.handleInputChange}
           onKeyDown={vm.handleKeyDown}
-          placeholder={vm.text.placeholder}
           autoFocus
         />
-
-        <div className="button-row">
-          <button className="primary-button" type="button" onClick={vm.handleSearch}>
-            {vm.text.searchButton}
-          </button>
-
-          <button
-            className="secondary-button"
-            type="button"
-            onClick={vm.handleOpenYouTube}
-          >
-            {vm.text.openYouTubeButton}
-          </button>
+        <div className="actions">
+          <button className="primary" onClick={vm.handleSearch} disabled={vm.isBusy}>{vm.text.searchButton}</button>
+          <button onClick={vm.handleOpenYouTube} disabled={vm.isBusy}>{vm.text.openYouTubeButton}</button>
         </div>
       </section>
-
-      <p className={vm.isError ? "message error" : "message"}>{vm.message}</p>
-
-      <section className="shortcut-row">
-        <div className="shortcut-text">
-          <span>{vm.text.shortcutLabel}</span>
-          <strong>{vm.text.shortcutKey}</strong>
-        </div>
-
-        <button
-          className={vm.isShortcutEnabled ? "toggle active" : "toggle"}
-          type="button"
-          role="switch"
-          aria-checked={vm.isShortcutEnabled}
-          aria-label={vm.text.shortcutToggleLabel}
-          onClick={vm.handleToggleShortcut}
-        >
+      <p className={vm.isError ? "message error" : "message"} role="status">{vm.message}</p>
+      <footer>
+        <span>{vm.text.shortcutLabel} <strong>{vm.text.shortcutKey}</strong></span>
+        <button className={vm.isShortcutEnabled ? "switch on" : "switch"}
+          role="switch" aria-checked={vm.isShortcutEnabled}
+          aria-label={vm.text.shortcutToggleLabel} onClick={vm.handleToggleShortcut}>
           <span />
         </button>
-      </section>
-
+      </footer>
       <style>{`
-        :root {
-          color-scheme: dark;
-
-          --bg: #111827;
-          --text-main: #f9fafb;
-          --text-sub: #9ca3af;
-
-          --card-bg: #172033;
-          --card-border: #283244;
-
-          --input-bg: #0f172a;
-          --input-border: #283244;
-          --input-text: #f9fafb;
-          --input-placeholder: #6b7280;
-
-          --focus-border: #60a5fa;
-          --focus-shadow: rgba(96, 165, 250, 0.18);
-
-          --primary-bg: #ef4444;
-          --primary-bg-hover: #f05252;
-          --primary-text: #ffffff;
-
-          --secondary-bg: #1f2937;
-          --secondary-bg-hover: #273449;
-          --secondary-border: #374151;
-          --secondary-border-hover: #4b5563;
-          --secondary-text: #d1d5db;
-
-          --error-text: #fca5a5;
-
-          --divider: #1f2937;
-          --toggle-bg: #4b5563;
-          --toggle-active-bg: #22c55e;
-          --toggle-knob: #ffffff;
-        }
-
-        @media (prefers-color-scheme: light) {
-          :root {
-            color-scheme: light;
-
-            --bg: #f8fafc;
-            --text-main: #111827;
-            --text-sub: #6b7280;
-
-            --card-bg: #ffffff;
-            --card-border: #e5e7eb;
-
-            --input-bg: #f9fafb;
-            --input-border: #d1d5db;
-            --input-text: #111827;
-            --input-placeholder: #9ca3af;
-
-            --focus-border: #2563eb;
-            --focus-shadow: rgba(37, 99, 235, 0.16);
-
-            --primary-bg: #dc2626;
-            --primary-bg-hover: #b91c1c;
-            --primary-text: #ffffff;
-
-            --secondary-bg: #f3f4f6;
-            --secondary-bg-hover: #e5e7eb;
-            --secondary-border: #d1d5db;
-            --secondary-border-hover: #9ca3af;
-            --secondary-text: #374151;
-
-            --error-text: #dc2626;
-
-            --divider: #e5e7eb;
-            --toggle-bg: #d1d5db;
-            --toggle-active-bg: #16a34a;
-            --toggle-knob: #ffffff;
-          }
-        }
-
-        * {
-          box-sizing: border-box;
-        }
-
-        html,
-        body {
-          margin: 0;
-          padding: 0;
-          width: 320px;
-          min-height: 0;
-          background: var(--bg);
-          color: var(--text-main);
-          font-family:
-            system-ui,
-            -apple-system,
-            BlinkMacSystemFont,
-            "Segoe UI",
-            sans-serif;
-        }
-
-        button,
-        input {
-          font: inherit;
-        }
-
-        .popup-root {
-          width: 320px;
-          padding: 14px;
-          background: var(--bg);
-          transition:
-            background 140ms ease,
-            color 140ms ease;
-        }
-
-        .header {
-          margin-bottom: 12px;
-        }
-
-        .header h1 {
-          margin: 0;
-          font-size: 18px;
-          line-height: 1.3;
-          font-weight: 700;
-          letter-spacing: -0.02em;
-          color: var(--text-main);
-        }
-
-        .header p {
-          margin: 4px 0 0;
-          font-size: 12px;
-          line-height: 1.45;
-          color: var(--text-sub);
-        }
-
-        .search-section {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          padding: 10px;
-          border: 1px solid var(--card-border);
-          border-radius: 14px;
-          background: var(--card-bg);
-          transition:
-            background 140ms ease,
-            border-color 140ms ease;
-        }
-
-        .search-input {
-          width: 100%;
-          height: 38px;
-          padding: 0 12px;
-          border: 1px solid var(--input-border);
-          border-radius: 10px;
-          outline: none;
-          background: var(--input-bg);
-          color: var(--input-text);
-          font-size: 13px;
-          transition:
-            background 140ms ease,
-            color 140ms ease,
-            border-color 140ms ease,
-            box-shadow 140ms ease;
-        }
-
-        .search-input::placeholder {
-          color: var(--input-placeholder);
-        }
-
-        .search-input:focus {
-          border-color: var(--focus-border);
-          box-shadow: 0 0 0 2px var(--focus-shadow);
-        }
-
-        .button-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 8px;
-        }
-
-        .primary-button,
-        .secondary-button {
-          height: 36px;
-          border-radius: 10px;
-          cursor: pointer;
-          font-size: 13px;
-          font-weight: 700;
-          transition:
-            background 120ms ease,
-            transform 120ms ease,
-            border-color 120ms ease,
-            color 120ms ease;
-        }
-
-        .primary-button {
-          border: 0;
-          background: var(--primary-bg);
-          color: var(--primary-text);
-        }
-
-        .primary-button:hover {
-          background: var(--primary-bg-hover);
-        }
-
-        .secondary-button {
-          border: 1px solid var(--secondary-border);
-          background: var(--secondary-bg);
-          color: var(--secondary-text);
-        }
-
-        .secondary-button:hover {
-          background: var(--secondary-bg-hover);
-          border-color: var(--secondary-border-hover);
-        }
-
-        .primary-button:active,
-        .secondary-button:active {
-          transform: translateY(1px);
-        }
-
-        .message {
-          min-height: 18px;
-          margin: 10px 2px 8px;
-          font-size: 12px;
-          line-height: 1.45;
-          color: var(--text-sub);
-        }
-
-        .message.error {
-          color: var(--error-text);
-        }
-
-        .shortcut-row {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding-top: 8px;
-          border-top: 1px solid var(--divider);
-        }
-
-        .shortcut-text {
-          display: flex;
-          align-items: center;
-          gap: 7px;
-          color: var(--text-sub);
-          font-size: 12px;
-        }
-
-        .shortcut-text strong {
-          color: var(--text-main);
-          font-size: 12px;
-          font-weight: 700;
-        }
-
-        .toggle {
-          position: relative;
-          width: 38px;
-          height: 22px;
-          border: 0;
-          border-radius: 999px;
-          background: var(--toggle-bg);
-          cursor: pointer;
-          padding: 0;
-          transition: background 120ms ease;
-        }
-
-        .toggle span {
-          position: absolute;
-          top: 3px;
-          left: 3px;
-          width: 16px;
-          height: 16px;
-          border-radius: 50%;
-          background: var(--toggle-knob);
-          transition: transform 120ms ease;
-        }
-
-        .toggle.active {
-          background: var(--toggle-active-bg);
-        }
-
-        .toggle.active span {
-          transform: translateX(16px);
-        }
+        :root {color-scheme:dark}
+        * {box-sizing:border-box}
+        body {padding:0;margin:0;background:#111827;color:#f9fafb;font-family:system-ui,sans-serif}
+        button,input {font:inherit}
+        button {cursor:pointer}
+        button:disabled {opacity:.6;cursor:wait}
+        .popup-root {width:345px;padding:15px}
+        header h1 {font-size:19px;margin:0;font-weight:700}
+        header p {margin:5px 0 14px;color:#9ca3af;font-size:12px}
+        .panel {border:1px solid #334155;background:#182235;border-radius:14px;padding:11px;margin-bottom:10px}
+        .label {font-size:12px;color:#94a3b8;margin-bottom:9px}
+        .modes {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+        .modes button {min-height:38px;background:#243044;color:#f1f5f9;border:1px solid #475569;border-radius:9px;font-weight:600;font-size:12px}
+        .modes button.selected {border-color:#ef4444;background:#ef4444;color:white}
+        .hint {font-size:12px;color:#cbd5e1;line-height:1.6;margin:10px 0 1px}
+        .focus-button {display:block;width:100%;padding:12px;background:#166534;color:white;border:1px solid #22c55e;border-radius:10px;font-size:13px;font-weight:700;margin-bottom:10px}
+        input {width:100%;height:44px;background:#0f172a;color:white;border:1px solid #64748b;border-radius:10px;padding:0 11px;outline:none}
+        input:focus {border-color:#60a5fa;box-shadow:0 0 0 2px #60a5fa33}
+        .actions {display:grid;grid-template-columns:1.65fr 1fr;gap:8px;margin-top:9px}
+        .actions button {height:39px;color:#f9fafb;background:#273449;border:1px solid #475569;border-radius:10px;font-size:12px;font-weight:700}
+        .actions button.primary {background:#ef4444;border-color:#ef4444}
+        .message {min-height:32px;margin:11px 2px;color:#cbd5e1;font-size:12px;line-height:1.45}
+        .message.error {color:#fca5a5}
+        footer {display:flex;justify-content:space-between;align-items:center;border-top:1px solid #334155;padding-top:12px;color:#cbd5e1;font-size:12px}
+        footer strong {color:#fff}
+        .switch {background:#475569;border:0;border-radius:30px;width:44px;height:26px;padding:3px;display:flex;justify-content:flex-start;align-items:center}
+        .switch.on {background:#22c55e;justify-content:flex-end}
+        .switch span {height:20px;width:20px;border-radius:50%;background:white}
       `}</style>
     </main>
   )
 }
-
-export default Popup

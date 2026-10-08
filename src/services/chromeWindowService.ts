@@ -1,136 +1,73 @@
 import { createYouTubeSearchUrl, getYouTubeHomeUrl } from "./youtubeService"
 
-const YOUTUBE_POPUP_WINDOW_ID_KEY = "youtubePopupWindowId"
+const WINDOW_ID_KEY = "youtubePopupWindowId"
+const WINDOW_WIDTH = 560
+const WINDOW_HEIGHT = 740
 
-const YOUTUBE_POPUP_WIDTH = 900
-const YOUTUBE_POPUP_HEIGHT = 700
-
-function hasChromeWindowApi(): boolean {
-  return typeof chrome !== "undefined" && !!chrome.windows?.create
+async function getSavedWindowId(): Promise<number | null> {
+  const result = await chrome.storage.session.get(WINDOW_ID_KEY)
+  return typeof result[WINDOW_ID_KEY] === "number" ? result[WINDOW_ID_KEY] : null
 }
 
-function getSavedWindowId(): Promise<number | null> {
-  return new Promise((resolve) => {
-    if (typeof chrome === "undefined" || !chrome.storage?.session) {
-      resolve(null)
-      return
-    }
-
-    chrome.storage.session.get([YOUTUBE_POPUP_WINDOW_ID_KEY], (result) => {
-      const windowId = result[YOUTUBE_POPUP_WINDOW_ID_KEY]
-
-      resolve(typeof windowId === "number" ? windowId : null)
-    })
-  })
+async function saveWindowId(id: number): Promise<void> {
+  await chrome.storage.session.set({ [WINDOW_ID_KEY]: id })
 }
 
-function setSavedWindowId(windowId: number): Promise<void> {
-  return new Promise((resolve) => {
-    if (typeof chrome === "undefined" || !chrome.storage?.session) {
-      resolve()
-      return
-    }
-
-    chrome.storage.session.set(
-      {
-        [YOUTUBE_POPUP_WINDOW_ID_KEY]: windowId
-      },
-      () => resolve()
-    )
-  })
+async function clearWindowId(): Promise<void> {
+  await chrome.storage.session.remove(WINDOW_ID_KEY)
 }
 
-function clearSavedWindowId(): Promise<void> {
-  return new Promise((resolve) => {
-    if (typeof chrome === "undefined" || !chrome.storage?.session) {
-      resolve()
-      return
-    }
-
-    chrome.storage.session.remove([YOUTUBE_POPUP_WINDOW_ID_KEY], () => resolve())
-  })
-}
-
-async function focusAndNavigateExistingWindow(
-  windowId: number,
-  url: string
-): Promise<boolean> {
+function isYouTubeUrl(value?: string): boolean {
+  if (!value) return false
   try {
-    const targetWindow = await chrome.windows.get(windowId, {
-      populate: true
-    })
-
-    if (!targetWindow.id) {
-      await clearSavedWindowId()
-      return false
-    }
-
-    await chrome.windows.update(targetWindow.id, {
-      focused: true
-    })
-
-    const targetTab = targetWindow.tabs?.[0]
-
-    if (!targetTab?.id) {
-      await clearSavedWindowId()
-      return false
-    }
-
-    await chrome.tabs.update(targetTab.id, {
-      url,
-      active: true
-    })
-
-    return true
+    const url = new URL(value)
+    return url.protocol === "https:" &&
+      ["www.youtube.com", "youtube.com", "m.youtube.com"].includes(url.hostname)
   } catch {
-    await clearSavedWindowId()
     return false
-  }
-}
-
-async function createYouTubePopupWindow(url: string): Promise<void> {
-  const createdWindow = await chrome.windows.create({
-    url,
-    type: "popup",
-    width: YOUTUBE_POPUP_WIDTH,
-    height: YOUTUBE_POPUP_HEIGHT,
-    focused: true
-  })
-
-  if (createdWindow.id) {
-    await setSavedWindowId(createdWindow.id)
   }
 }
 
 export async function openPopupWindow(
   url: string,
-  width = YOUTUBE_POPUP_WIDTH,
-  height = YOUTUBE_POPUP_HEIGHT
+  width = WINDOW_WIDTH,
+  height = WINDOW_HEIGHT
 ): Promise<void> {
-  if (!hasChromeWindowApi()) {
-    window.open(url, "_blank", `width=${width},height=${height}`)
-    return
-  }
+  const existingId = await getSavedWindowId()
 
-  const savedWindowId = await getSavedWindowId()
+  if (existingId !== null) {
+    try {
+      const existingWindow = await chrome.windows.get(existingId, { populate: true })
+      const existingTab = existingWindow.tabs?.[0]
 
-  if (savedWindowId !== null) {
-    const reused = await focusAndNavigateExistingWindow(savedWindowId, url)
-
-    if (reused) {
-      return
+      // 기존 팝업에서 사용자가 다른 웹사이트로 이동한 경우 그 창을 건드리지 않습니다.
+      if (existingWindow.type === "popup" && existingTab?.id !== undefined &&
+          isYouTubeUrl(existingTab.url)) {
+        await chrome.tabs.update(existingTab.id, { url, active: true })
+        await chrome.windows.update(existingId, { focused: true })
+        return
+      }
+    } catch {
+      // 이전 창이 닫혔거나 유효하지 않음: 아래에서 새 창을 만듭니다.
     }
+    await clearWindowId()
   }
 
-  await createYouTubePopupWindow(url)
+  const created = await chrome.windows.create({
+    url,
+    type: "popup",
+    width,
+    height,
+    focused: true
+  })
+  if (created.id === undefined) throw new Error("새 유튜브 창을 만들지 못했습니다.")
+  await saveWindowId(created.id)
 }
 
 export function openYouTubeSearchWindow(keyword: string): Promise<void> {
-  const searchUrl = createYouTubeSearchUrl(keyword)
-  return openPopupWindow(searchUrl)
+  return openPopupWindow(createYouTubeSearchUrl(keyword))
 }
 
 export function openYouTubeHomeWindow(): Promise<void> {
-  const homeUrl = getYouTubeHomeUrl()
-  return openPopupWindow(homeUrl)
+  return openPopupWindow(getYouTubeHomeUrl())
 }

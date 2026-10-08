@@ -1,41 +1,23 @@
 import { SHORTCUT_ENABLED_KEY } from "../constants/storageKeys"
+import type { PlayerMode } from "../types/playerMode"
 
-export function getShortcutEnabled(): Promise<boolean> {
-  return new Promise((resolve) => {
-    if (typeof chrome === "undefined" || !chrome.storage?.local) {
-      resolve(true)
-      return
-    }
+const PLAYER_MODE_KEY = "playerMode"
 
-    chrome.storage.local.get([SHORTCUT_ENABLED_KEY], (result) => {
-      const savedValue = result[SHORTCUT_ENABLED_KEY]
-
-      if (typeof savedValue === "boolean") {
-        resolve(savedValue)
-        return
-      }
-
-      chrome.storage.local.set({
-        [SHORTCUT_ENABLED_KEY]: true
-      })
-
-      resolve(true)
-    })
-  })
+export async function getShortcutEnabled(): Promise<boolean> {
+  const result = await chrome.storage.local.get(SHORTCUT_ENABLED_KEY)
+  return result[SHORTCUT_ENABLED_KEY] !== false
 }
 
-export function setShortcutEnabled(value: boolean): Promise<void> {
-  return new Promise((resolve) => {
-    if (typeof chrome === "undefined" || !chrome.storage?.local) {
-      resolve()
-      return
-    }
+export async function setShortcutEnabled(value: boolean): Promise<void> {
+  await chrome.storage.local.set({ [SHORTCUT_ENABLED_KEY]: value })
+}
 
-    chrome.storage.local.set(
-      {
-        [SHORTCUT_ENABLED_KEY]: value
-      },
-      () => resolve()
-    )
-  })
+export async function getPlayerMode(): Promise<PlayerMode> {
+  const result = await chrome.storage.local.get(PLAYER_MODE_KEY)
+  const mode = result[PLAYER_MODE_KEY]
+  return mode === "radio" || mode === "window" ? mode : "pip"
+}
+
+export async function setPlayerMode(mode: PlayerMode): Promise<void> {
+  await chrome.storage.local.set({ [PLAYER_MODE_KEY]: mode })
 }
