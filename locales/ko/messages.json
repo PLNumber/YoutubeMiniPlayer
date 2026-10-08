@@ -1,11 +1,5 @@
 {
-  "extensionName": {
-    "message": "유튜브 미니 플레이어"
-  },
-  "extensionDescription": {
-    "message": "유튜브 영상을 PiP 또는 별도 작은 창으로 시청합니다. Alt+Y로 팝업을 엽니다."
-  },
-  "commandOpenPopup": {
-    "message": "유튜브 미니 플레이어 팝업 열기"
-  }
+  "extensionName": {"message": "MiniView - 유튜브 미니 플레이어"},
+  "extensionDescription": {"message": "YouTube 영상 검색, 선택 및 Picture-in-Picture 시청 도구입니다."},
+  "commandOpenPopup": {"message": "MiniView 열기"}
 }

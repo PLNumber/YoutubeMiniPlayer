@@ -1,1 +1,0 @@
-export const SHORTCUT_ENABLED_KEY = "shortcutEnabled"

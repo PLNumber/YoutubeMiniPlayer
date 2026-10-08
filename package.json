@@ -1,13 +1,14 @@
 {
-  "name": "youtube-mini-player",
+  "name": "miniview-youtube-pip",
   "displayName": "__MSG_extensionName__",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "__MSG_extensionDescription__",
   "author": "PL Number",
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build",
-    "package": "plasmo package"
+    "package": "plasmo package",
+    "check": "tsc --noEmit"
   },
   "dependencies": {
     "plasmo": "^0.90.5",
@@ -23,7 +24,15 @@
   },
   "manifest": {
     "default_locale": "en",
-    "permissions": ["windows", "storage", "tabs"],
+    "permissions": [
+      "storage",
+      "tabs",
+      "windows"
+    ],
+    "host_permissions": [
+      "https://www.googleapis.com/*"
+    ],
+    "action": {},
     "commands": {
       "open-youtube-mini-player": {
         "suggested_key": {

@@ -1,11 +1,5 @@
 {
-  "extensionName": {
-    "message": "YouTube Mini Player"
-  },
-  "extensionDescription": {
-    "message": "Watch YouTube in Picture-in-Picture or a small browser window. Open the popup with Alt+Y."
-  },
-  "commandOpenPopup": {
-    "message": "Open YouTube Mini Player popup"
-  }
+  "extensionName": {"message": "MiniView - YouTube PiP"},
+  "extensionDescription": {"message": "Search, select and watch YouTube videos using Picture-in-Picture."},
+  "commandOpenPopup": {"message": "Open MiniView"}
 }

@@ -1,38 +1,23 @@
-import { SHORTCUT_ENABLED_KEY } from "./constants/storageKeys"
-import { continueAudioInBackground } from "./services/radioTabService"
+const LAUNCHER_PATH = "tabs/miniview.html"
 
-const MINI_PLAYER_COMMAND = "open-youtube-mini-player"
-
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.local.get([SHORTCUT_ENABLED_KEY], (result) => {
-    if (typeof result[SHORTCUT_ENABLED_KEY] !== "boolean") {
-      chrome.storage.local.set({ [SHORTCUT_ENABLED_KEY]: true })
-    }
-  })
-})
-
-chrome.commands.onCommand.addListener((command) => {
-  if (command !== MINI_PLAYER_COMMAND) return
-  chrome.storage.local.get([SHORTCUT_ENABLED_KEY], async (result) => {
-    if (result[SHORTCUT_ENABLED_KEY] === false) return
-    try {
-      await chrome.action.openPopup()
-    } catch (error) {
-      console.warn("팝업을 열 수 없습니다.", error)
-    }
-  })
-})
-
-chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) => {
-  if (typeof message !== "object" || !message || !("type" in message) || message.type !== "YMP_RADIO_CONTINUE") return
-  // Only service messages from an actual YouTube tab, never from arbitrary origins.
-  if (!sender.tab?.url || !/^https:\/\/www\.youtube\.com\//.test(sender.tab.url)) {
-    sendResponse({ ok: false, error: "YouTube 영상 탭에서만 사용할 수 있습니다." })
-    return
+async function launchMiniView() {
+  const target = chrome.runtime.getURL(LAUNCHER_PATH)
+  const existing = await chrome.tabs.query({ url: `${chrome.runtime.getURL("tabs/")}*` })
+  const found = existing.find((tab) => tab.url?.split("?")[0] === target && typeof tab.id === "number")
+  if (found?.id !== undefined) {
+    await chrome.tabs.update(found.id, { active: true })
+    if (found.windowId !== undefined) await chrome.windows.update(found.windowId, { focused: true })
+  } else {
+    await chrome.tabs.create({ url: target })
   }
-  void continueAudioInBackground(sender.tab).then(
-    () => sendResponse({ ok: true }),
-    (error: unknown) => sendResponse({ ok: false, error: error instanceof Error ? error.message : "라디오 모드 전환 실패" })
-  )
-  return true
+}
+
+// No default_popup: toolbar click launches a persistent extension tab.
+chrome.action.onClicked.addListener(() => {
+  void launchMiniView().catch((error) => console.error("MiniView 열기 실패:", error))
+})
+chrome.commands.onCommand.addListener((command) => {
+  if (command === "open-youtube-mini-player") {
+    void launchMiniView().catch((error) => console.error("MiniView 단축키 실행 실패:", error))
+  }
 })
