@@ -1,6 +1,7 @@
 /** MiniView window launcher: reuses its dedicated window even after YouTube navigation. */
 const MINI_VIEW_URL = chrome.runtime.getURL("tabs/miniview.html")
 const WINDOW_STORAGE_KEY = "miniview_window_id"
+const AUTO_MINIMIZED_KEY = "miniview_auto_minimized_window_id"
 const WIDTH = 420
 const HEIGHT = 620
 
@@ -29,6 +30,7 @@ async function openOrFocusMiniView(): Promise<void> {
   if (id !== null) {
     await chrome.storage.session.set({ [WINDOW_STORAGE_KEY]: id })
     await chrome.windows.update(id, { focused: true, state: "normal" })
+    await chrome.storage.session.remove(AUTO_MINIMIZED_KEY)
     return
   }
   const created = await chrome.windows.create({
@@ -52,7 +54,12 @@ chrome.commands.onCommand.addListener((command) => {
 })
 chrome.windows.onRemoved.addListener((id) => {
   void chrome.storage.session.get(WINDOW_STORAGE_KEY).then((value) => {
-    if (value[WINDOW_STORAGE_KEY] === id) return chrome.storage.session.remove(WINDOW_STORAGE_KEY)
+    if (value[WINDOW_STORAGE_KEY] === id) {
+      return Promise.all([
+        chrome.storage.session.remove(WINDOW_STORAGE_KEY),
+        chrome.storage.session.remove(AUTO_MINIMIZED_KEY)
+      ])
+    }
   })
 })
 
@@ -60,12 +67,30 @@ chrome.windows.onRemoved.addListener((id) => {
 chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) => {
   if (!message || typeof message !== "object" || !("type" in message)) return
   const type = (message as { type: string }).type
-  if (type !== "MINIVIEW_CHECK_WINDOW" && type !== "MINIVIEW_RETURN") return
+  if (!["MINIVIEW_CHECK_WINDOW", "MINIVIEW_RETURN", "MINIVIEW_PIP_STARTED", "MINIVIEW_PIP_ENDED"].includes(type)) return
   void (async () => {
     const id = await getMiniViewWindowId()
     const allowed = id !== null && sender.tab?.windowId === id
-    if (type === "MINIVIEW_RETURN" && allowed && sender.tab?.id !== undefined) {
-      await chrome.tabs.update(sender.tab.id, { url: MINI_VIEW_URL })
+    if (allowed && id !== null) {
+      if (type === "MINIVIEW_RETURN" && sender.tab?.id !== undefined) {
+        await chrome.tabs.update(sender.tab.id, { url: MINI_VIEW_URL })
+      }
+      if (type === "MINIVIEW_PIP_STARTED") {
+        const saved = await chrome.storage.session.get(AUTO_MINIMIZED_KEY)
+        if (saved[AUTO_MINIMIZED_KEY] !== id) {
+          // Keep the YouTube tab alive. Closing it can also close native PiP.
+          await chrome.windows.update(id, { state: "minimized" })
+          await chrome.storage.session.set({ [AUTO_MINIMIZED_KEY]: id })
+        }
+      }
+      if (type === "MINIVIEW_PIP_ENDED") {
+        const saved = await chrome.storage.session.get(AUTO_MINIMIZED_KEY)
+        // Restore only a window MiniView itself minimized, not user-minimized windows.
+        if (saved[AUTO_MINIMIZED_KEY] === id) {
+          await chrome.windows.update(id, { state: "normal", focused: true })
+          await chrome.storage.session.remove(AUTO_MINIMIZED_KEY)
+        }
+      }
     }
     sendResponse({ ok: allowed })
   })().catch((error: unknown) => {
